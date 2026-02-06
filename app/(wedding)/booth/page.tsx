@@ -1,10 +1,10 @@
 "use client"
+
 import { useState, useRef, useEffect } from "react"
 import { Camera, Download, X, Image as ImageIcon, RotateCcw } from "lucide-react"
 import { ref, uploadString, getDownloadURL } from "firebase/storage"
-import { addDoc, collection, serverTimestamp } from "firebase/firestore"
+import { addDoc, collection, serverTimestamp, getDocs, query, orderBy } from "firebase/firestore"
 import { storage, db } from "@/firebase/firebase"
-import { getDocs, query, orderBy } from "firebase/firestore"
 import { Timestamp } from "firebase/firestore"
 
 interface Photo {
@@ -12,6 +12,7 @@ interface Photo {
   url: string
   frame: string
   createdAt: Timestamp
+  createdAtClient: number
 }
 
 export default function PhotoBoothPage() {
@@ -43,23 +44,25 @@ export default function PhotoBoothPage() {
     return stopCamera
   }, [])
 
+  /* -------------------- FIREBASE LOAD -------------------- */
+
   const loadPhotosFromFirebase = async () => {
     try {
-      const q = query(collection(db, "photos"), orderBy("createdAt", "desc"))
+      const q = query(collection(db, "wedding"), orderBy("createdAtClient", "desc"))
       const snap = await getDocs(q)
 
-      const items = snap.docs.map(doc => ({
+      const items: Photo[] = snap.docs.map(doc => ({
         id: doc.id,
-        ...doc.data()
+        ...(doc.data() as any),
       }))
 
-      setPhotos(items as any)
+      setPhotos(items)
     } catch (err) {
-      console.error("Load error:", err)
+      console.error("Gallery load error:", err)
     }
   }
 
-  /* -------------------- DESKTOP CAMERA -------------------- */
+  /* -------------------- CAMERA HANDLING -------------------- */
 
   const startCamera = async () => {
     try {
@@ -77,7 +80,7 @@ export default function PhotoBoothPage() {
       }
     } catch (err) {
       console.error("Camera error:", err)
-      alert("Camera access failed. Please allow permissions or use HTTPS.")
+      alert("Camera access failed. Please allow permissions and use HTTPS.")
     }
   }
 
@@ -107,7 +110,7 @@ export default function PhotoBoothPage() {
     setCapturedPhoto(canvas.toDataURL("image/jpeg", 0.9))
   }
 
-  /* -------------------- MOBILE NATIVE CAMERA -------------------- */
+  /* -------------------- MOBILE CAMERA -------------------- */
 
   const handleNativeCapture = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -126,41 +129,42 @@ export default function PhotoBoothPage() {
     }
   }
 
-  /* -------------------- SAVE + DOWNLOAD -------------------- */
+  /* -------------------- FIREBASE SAVE -------------------- */
 
   const savePhoto = async () => {
-    if (!capturedPhoto) return
+    if (!capturedPhoto || loading) return
     setLoading(true)
 
     try {
-      const storageRef = ref(storage, `wedding/${Date.now()}.jpg`)
+      const filename = `wedding/${Date.now()}.jpg`
+      const storageRef = ref(storage, filename)
 
       await uploadString(storageRef, capturedPhoto, "data_url")
 
       const url = await getDownloadURL(storageRef)
 
-      await addDoc(collection(db, "photos"), {
+      await addDoc(collection(db, "wedding"), {
         url,
         frame: selectedFrame,
         createdAt: serverTimestamp(),
+        createdAtClient: Date.now(),
       })
 
       setCapturedPhoto(null)
       stopCamera()
-      alert("Photo saved to Firebase 📸")
-      loadPhotosFromFirebase()
+      await loadPhotosFromFirebase()
 
     } catch (err) {
-      console.error("Firebase upload failed:", err)
-      alert("Firebase upload failed")
+      console.error("Firebase save error:", err)
+      alert("Upload failed. Try again.")
     } finally {
       setLoading(false)
     }
   }
 
-  const downloadPhoto = (imageData: string) => {
+  const downloadPhoto = (url: string) => {
     const a = document.createElement("a")
-    a.href = imageData
+    a.href = url
     a.download = `wedding-photo-${Date.now()}.jpg`
     a.click()
   }
@@ -179,8 +183,8 @@ export default function PhotoBoothPage() {
       />
 
       <div className="page-header">
-        <h1>Photo Booth</h1>
-        <p>Capture and share your favorite moments</p>
+        <h1>Wedding Photo Booth</h1>
+        <p>Capture beautiful moments — live wedding gallery</p>
       </div>
 
       <div className="booth-container">
@@ -238,7 +242,7 @@ export default function PhotoBoothPage() {
             {capturedPhoto && (
               <>
                 <div className="video-container">
-                  <img src={capturedPhoto} className="photo-preview" alt="photo-preview" />
+                  <img src={capturedPhoto} className="photo-preview" alt="preview" />
                   <div className={`frame-overlay ${selectedFrame}`}>
                     <div className="frame-text">Merit & Favour</div>
                     <div className="frame-text">Feb 14, 2026</div>
@@ -278,7 +282,7 @@ export default function PhotoBoothPage() {
             <div className="photo-grid">
               {photos.map(photo => (
                 <div key={photo.id} className="photo-card">
-                  <img src={photo.url} alt="photos" />
+                  <img src={photo.url} alt="wedding" />
                   <button onClick={() => downloadPhoto(photo.url)}>
                     <Download size={18} />
                   </button>

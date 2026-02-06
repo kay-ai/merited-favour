@@ -13,7 +13,7 @@ export default function WeddingCollage() {
     { src: "/images/card-details-2.png", link: "/details", position: { top: "44%", left: "42%", transform: "translateX(-50%)", rotate: "1deg" }, delay: 100 },
     { src: "/images/card-donations.png", link: "/donations", position: { top: "22%", right: "11%", rotate: "3deg" }, delay: 300 },
     { src: "/images/card-gallery.png", link: "/gallery", position: { top: "35%", right: "3%", rotate: "-2deg" }, delay: 500 },
-    { src: "/images/card-toast.png", link: "/toast", position: { top: "71%", right: "12%", rotate: "2deg" }, delay: 600 },
+    { src: "/images/card-toast.png", link: "/toasts", position: { top: "71%", right: "12%", rotate: "2deg" }, delay: 600 },
     // { src: "/images/card-donations.png", link: "/donations", position: { top: "73%", left: "43%", transform: "translateX(-50%)", rotate: "-1deg" }, delay: 700 },
   ]
 

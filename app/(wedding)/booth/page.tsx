@@ -1,232 +1,181 @@
 "use client"
 import { useState, useRef, useEffect } from "react"
-import { Camera, Download, X, Upload, RotateCcw, Timer, Zap } from "lucide-react"
+import { Camera, Download, X, Image as ImageIcon, RotateCcw } from "lucide-react"
+import { ref, uploadString, getDownloadURL } from "firebase/storage"
+import { addDoc, collection, serverTimestamp } from "firebase/firestore"
+import { storage, db } from "@/firebase/firebase"
+import { getDocs, query, orderBy } from "firebase/firestore"
+import { Timestamp } from "firebase/firestore"
 
 interface Photo {
   id: string
-  imageData: string
-  filter: string
-  timestamp: number
+  url: string
+  frame: string
+  createdAt: Timestamp
 }
 
-const filters = [
-  { id: "none", label: "Normal", css: "none" },
-  { id: "bw", label: "B&W", css: "grayscale(1)" },
-  { id: "vintage", label: "Vintage", css: "sepia(0.6) contrast(1.1)" },
-  { id: "warm", label: "Warm", css: "brightness(1.1) saturate(1.3)" },
-  { id: "cool", label: "Cool", css: "brightness(1.05) hue-rotate(180deg)" }
-]
-
 export default function PhotoBoothPage() {
+  const [selectedFrame, setSelectedFrame] = useState("classic")
+  const [showCamera, setShowCamera] = useState(false)
+  const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null)
+  const [photos, setPhotos] = useState<Photo[]>([])
+  const [loading, setLoading] = useState(false)
+  const [facingMode, setFacingMode] = useState<"user" | "environment">("user")
+
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
   const streamRef = useRef<MediaStream | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const [photos, setPhotos] = useState<Photo[]>([])
-  const [preview, setPreview] = useState<string | null>(null)
-  const [countdown, setCountdown] = useState<number | null>(null)
-  const [filter, setFilter] = useState(filters[0])
-  const [facing, setFacing] = useState<"user" | "environment">("user")
-  const [showCamera, setShowCamera] = useState(false)
-  const [loading, setLoading] = useState(false)
+  const frames = [
+    { id: "classic", name: "Classic", emoji: "🌿" },
+    { id: "romantic", name: "Romantic", emoji: "💕" },
+    { id: "elegant", name: "Elegant", emoji: "✨" },
+    { id: "fun", name: "Fun", emoji: "🎉" },
+  ]
 
-  const isMobile = () => /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+  const isMobile = () =>
+    typeof window !== "undefined" &&
+    /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
 
   useEffect(() => {
-    loadPhotos()
-    
-    return () => {
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach(track => track.stop())
-      }
-    }
+    loadPhotosFromFirebase()
+    return stopCamera
   }, [])
 
-  const loadPhotos = async () => {
+  const loadPhotosFromFirebase = async () => {
     try {
-      const result = await window.storage.list("photo:", true)
-      if (result && result.keys) {
-        const photoPromises = result.keys.map(async (key) => {
-          const data = await window.storage.get(key, true)
-          if (data) {
-            return JSON.parse(data.value)
-          }
-          return null
-        })
-        const loadedPhotos = (await Promise.all(photoPromises)).filter(Boolean)
-        setPhotos(loadedPhotos.sort((a, b) => b.timestamp - a.timestamp))
-      }
-    } catch (error) {
-      console.error("Error loading photos:", error)
+      const q = query(collection(db, "photos"), orderBy("createdAt", "desc"))
+      const snap = await getDocs(q)
+
+      const items = snap.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }))
+
+      setPhotos(items as any)
+    } catch (err) {
+      console.error("Load error:", err)
     }
   }
 
+  /* -------------------- DESKTOP CAMERA -------------------- */
+
   const startCamera = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { 
-          facingMode: facing,
-          width: { ideal: 1280 },
-          height: { ideal: 720 }
-        } 
+      stopCamera()
+
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode, width: { ideal: 1280 }, height: { ideal: 720 } },
       })
-      
+
       if (videoRef.current) {
         videoRef.current.srcObject = stream
         await videoRef.current.play()
         streamRef.current = stream
         setShowCamera(true)
       }
-    } catch (error) {
-      console.error("Error accessing camera:", error)
-      alert("Unable to access camera. Please check permissions.")
+    } catch (err) {
+      console.error("Camera error:", err)
+      alert("Camera access failed. Please allow permissions or use HTTPS.")
     }
   }
 
   const stopCamera = () => {
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop())
-      streamRef.current = null
-    }
-    if (videoRef.current) {
-      videoRef.current.srcObject = null
-    }
+    streamRef.current?.getTracks().forEach(track => track.stop())
+    streamRef.current = null
     setShowCamera(false)
   }
 
-  const capture = () => {
-    if (videoRef.current && canvasRef.current) {
-      const canvas = canvasRef.current
-      const video = videoRef.current
-      
-      canvas.width = video.videoWidth
-      canvas.height = video.videoHeight
-      
-      const ctx = canvas.getContext("2d")
-      if (ctx) {
-        ctx.filter = filter.css
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
-        const imageData = canvas.toDataURL("image/jpeg", 0.9)
-        setPreview(imageData)
-        ctx.filter = "none"
-      }
-    }
+  const switchCamera = async () => {
+    setFacingMode(prev => (prev === "user" ? "environment" : "user"))
+    if (!isMobile()) await startCamera()
   }
 
-  const startCountdown = async () => {
-    for (let i = 3; i > 0; i--) {
-      setCountdown(i)
-      await new Promise(r => setTimeout(r, 1000))
-    }
-    setCountdown(null)
-    capture()
-  }
+  const capturePhoto = () => {
+    if (!videoRef.current || !canvasRef.current) return
 
-  const burstCapture = async () => {
-    const shots: string[] = []
-
-    for (let i = 0; i < 3; i++) {
-      capture()
-      if (canvasRef.current) {
-        shots.push(canvasRef.current.toDataURL("image/jpeg", 0.9))
-      }
-      await new Promise(r => setTimeout(r, 600))
-    }
-
-    buildCollage(shots)
-  }
-
-  const buildCollage = (shots: string[]) => {
+    const video = videoRef.current
     const canvas = canvasRef.current
-    if (!canvas) return
+
+    canvas.width = video.videoWidth
+    canvas.height = video.videoHeight
 
     const ctx = canvas.getContext("2d")
-    if (!ctx) return
+    ctx?.drawImage(video, 0, 0, canvas.width, canvas.height)
 
-    const grid = Math.ceil(Math.sqrt(shots.length))
-    const size = 600
-    const cell = size / grid
-
-    canvas.width = size
-    canvas.height = size
-
-    let loaded = 0
-    shots.forEach((src, idx) => {
-      const img = new Image()
-      img.onload = () => {
-        const x = (idx % grid) * cell
-        const y = Math.floor(idx / grid) * cell
-        ctx.drawImage(img, x, y, cell, cell)
-        loaded++
-        if (loaded === shots.length) {
-          setPreview(canvas.toDataURL("image/jpeg", 0.95))
-        }
-      }
-      img.src = src
-    })
+    setCapturedPhoto(canvas.toDataURL("image/jpeg", 0.9))
   }
 
-  const uploadFromGallery = (e: React.ChangeEvent<HTMLInputElement>) => {
+  /* -------------------- MOBILE NATIVE CAMERA -------------------- */
+
+  const handleNativeCapture = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
 
     const reader = new FileReader()
-    reader.onload = () => {
-      const imageData = reader.result as string
-      setPreview(imageData)
-    }
+    reader.onload = () => setCapturedPhoto(reader.result as string)
     reader.readAsDataURL(file)
   }
 
+  const openCamera = () => {
+    if (isMobile()) {
+      fileInputRef.current?.click()
+    } else {
+      startCamera()
+    }
+  }
+
+  /* -------------------- SAVE + DOWNLOAD -------------------- */
+
   const savePhoto = async () => {
-    if (!preview) return
-    
+    if (!capturedPhoto) return
     setLoading(true)
+
     try {
-      const photo: Photo = {
-        id: `photo_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        imageData: preview,
-        filter: filter.id,
-        timestamp: Date.now()
-      }
-      
-      await window.storage.set(`photo:${photo.id}`, JSON.stringify(photo), true)
-      await loadPhotos()
-      setPreview(null)
+      const storageRef = ref(storage, `wedding/${Date.now()}.jpg`)
+
+      await uploadString(storageRef, capturedPhoto, "data_url")
+
+      const url = await getDownloadURL(storageRef)
+
+      await addDoc(collection(db, "photos"), {
+        url,
+        frame: selectedFrame,
+        createdAt: serverTimestamp(),
+      })
+
+      setCapturedPhoto(null)
       stopCamera()
-      alert("Photo saved successfully! 📸")
-    } catch (error) {
-      console.error("Error saving photo:", error)
-      alert("Failed to save photo. Please try again.")
+      alert("Photo saved to Firebase 📸")
+      loadPhotosFromFirebase()
+
+    } catch (err) {
+      console.error("Firebase upload failed:", err)
+      alert("Firebase upload failed")
     } finally {
       setLoading(false)
     }
   }
 
   const downloadPhoto = (imageData: string) => {
-    const link = document.createElement("a")
-    link.href = imageData
-    link.download = `wedding-photo-${Date.now()}.jpg`
-    link.click()
+    const a = document.createElement("a")
+    a.href = imageData
+    a.download = `wedding-photo-${Date.now()}.jpg`
+    a.click()
   }
 
-  const toggleCamera = () => {
-    setFacing(f => f === "user" ? "environment" : "user")
-    if (showCamera) {
-      stopCamera()
-      setTimeout(() => startCamera(), 100)
-    }
-  }
+  /* -------------------- UI -------------------- */
 
   return (
-    <div className="main booth-page">
+    <div className="main">
       <input
         ref={fileInputRef}
         type="file"
         accept="image/*"
+        capture="environment"
         style={{ display: "none" }}
-        onChange={uploadFromGallery}
+        onChange={handleNativeCapture}
       />
 
       <div className="page-header">
@@ -235,143 +184,104 @@ export default function PhotoBoothPage() {
       </div>
 
       <div className="booth-container">
-        {/* Camera Section */}
         <div className="camera-section">
-          {countdown !== null && (
-            <div className="countdown-overlay">
-              <div className="countdown-number">{countdown}</div>
-            </div>
-          )}
+          <h2 className="section-title">Take a Photo</h2>
 
-          {!showCamera && !preview && (
-            <div className="camera-placeholder">
-              <Camera size={64} color="#8b957b" />
-              <p>Ready to capture a moment?</p>
-              <button className="btn btn-primary" onClick={startCamera}>
-                <Camera size={20} />
-                Open Camera
+          <div className="frame-selector">
+            {frames.map(frame => (
+              <button
+                key={frame.id}
+                className={`frame-option ${selectedFrame === frame.id ? "active" : ""}`}
+                onClick={() => setSelectedFrame(frame.id)}
+              >
+                <span>{frame.emoji}</span>
+                <span>{frame.name}</span>
               </button>
-            </div>
-          )}
+            ))}
+          </div>
 
-          {showCamera && !preview && (
-            <div className="camera-view">
-              <video 
-                ref={videoRef} 
-                autoPlay 
-                playsInline 
-                muted 
-                style={{ filter: filter.css }}
-              />
-              
-              <div className="camera-overlay">
-                <div className="filter-selector">
-                  {filters.map(f => (
-                    <button
-                      key={f.id}
-                      className={`filter-btn ${filter.id === f.id ? 'active' : ''}`}
-                      onClick={() => setFilter(f)}
-                    >
-                      {f.label}
-                    </button>
-                  ))}
+          <div className="camera-container">
+            {!showCamera && !capturedPhoto && (
+              <div className="camera-placeholder">
+                <Camera size={64} />
+                <p>Ready to capture a moment?</p>
+                <button className="btn btn-primary" onClick={openCamera}>
+                  <Camera size={20} /> Open Camera
+                </button>
+              </div>
+            )}
+
+            {showCamera && !capturedPhoto && (
+              <>
+                <div className="video-container">
+                  <video ref={videoRef} autoPlay playsInline muted />
+                  <div className={`frame-overlay ${selectedFrame}`}>
+                    <div className="frame-text">Merit & Favour</div>
+                    <div className="frame-text">Feb 14, 2026</div>
+                  </div>
                 </div>
 
-                <div className="camera-controls">
-                  <button className="control-btn" onClick={() => fileInputRef.current?.click()}>
-                    <Upload size={24} />
+                <div className="button-group">
+                  <button className="btn btn-secondary" onClick={switchCamera}>
+                    <RotateCcw size={20} /> Switch
                   </button>
-
-                  <button className="control-btn" onClick={startCountdown}>
-                    <Timer size={24} />
+                  <button className="btn btn-primary" onClick={capturePhoto}>
+                    <Camera size={20} /> Capture
                   </button>
-
-                  <button className="capture-btn" onClick={capture}>
-                    <Camera size={32} />
-                  </button>
-
-                  <button className="control-btn" onClick={burstCapture}>
-                    <Zap size={24} />
-                  </button>
-
-                  {isMobile() && (
-                    <button className="control-btn" onClick={toggleCamera}>
-                      <RotateCcw size={24} />
-                    </button>
-                  )}
-
-                  <button className="control-btn close-btn" onClick={stopCamera}>
-                    <X size={24} />
+                  <button className="btn btn-danger" onClick={stopCamera}>
+                    <X size={20} /> Cancel
                   </button>
                 </div>
-              </div>
-            </div>
-          )}
+              </>
+            )}
 
-          {preview && (
-            <div className="preview-view">
-              <img src={preview} alt="Preview" className="preview-image" />
-              
-              <div className="preview-controls">
-                <button 
-                  className="btn btn-primary" 
-                  onClick={savePhoto}
-                  disabled={loading}
-                >
-                  {loading ? "Saving..." : "Save Photo"}
-                </button>
-                <button className="btn btn-secondary" onClick={() => setPreview(null)}>
-                  Retake
-                </button>
-                {!showCamera && (
-                  <button className="btn btn-secondary" onClick={startCamera}>
-                    Take Another
+            {capturedPhoto && (
+              <>
+                <div className="video-container">
+                  <img src={capturedPhoto} className="photo-preview" alt="photo-preview" />
+                  <div className={`frame-overlay ${selectedFrame}`}>
+                    <div className="frame-text">Merit & Favour</div>
+                    <div className="frame-text">Feb 14, 2026</div>
+                  </div>
+                </div>
+
+                <div className="button-group">
+                  <button className="btn btn-primary" disabled={loading} onClick={savePhoto}>
+                    {loading ? "Saving..." : "Save Photo"}
                   </button>
-                )}
-              </div>
-            </div>
-          )}
+                  <button className="btn btn-secondary" onClick={() => setCapturedPhoto(null)}>
+                    Retake
+                  </button>
+                  <button className="btn btn-danger" onClick={stopCamera}>
+                    <X size={20} /> Cancel
+                  </button>
+                </div>
+              </>
+            )}
 
-          <canvas ref={canvasRef} style={{ display: 'none' }} />
+            <canvas ref={canvasRef} style={{ display: "none" }} />
+          </div>
         </div>
 
-        {/* Gallery Section */}
         <div className="gallery-section">
           <div className="gallery-header">
             <h2>Wedding Gallery</h2>
-            <p className="photo-count">
-              {photos.length} {photos.length === 1 ? 'photo' : 'photos'} shared
-            </p>
+            <p>{photos.length} photos</p>
           </div>
 
           {photos.length === 0 ? (
             <div className="empty-state">
-              <Camera size={64} color="#ccc" />
-              <p>No photos yet. Be the first to capture a moment!</p>
+              <ImageIcon size={64} />
+              <p>No photos yet.</p>
             </div>
           ) : (
             <div className="photo-grid">
               {photos.map(photo => (
                 <div key={photo.id} className="photo-card">
-                  <div className="photo-wrapper">
-                    <img 
-                      src={photo.imageData} 
-                      alt="Wedding moment"
-                      style={{ filter: filters.find(f => f.id === photo.filter)?.css || 'none' }}
-                    />
-                  </div>
-                  <div className="photo-actions">
-                    <span className="photo-time">
-                      {new Date(photo.timestamp).toLocaleString()}
-                    </span>
-                    <button 
-                      className="download-btn"
-                      onClick={() => downloadPhoto(photo.imageData)}
-                      title="Download photo"
-                    >
-                      <Download size={20} />
-                    </button>
-                  </div>
+                  <img src={photo.url} alt="photos" />
+                  <button onClick={() => downloadPhoto(photo.url)}>
+                    <Download size={18} />
+                  </button>
                 </div>
               ))}
             </div>

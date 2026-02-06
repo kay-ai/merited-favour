@@ -299,14 +299,14 @@ button {
   }
 
   .card:nth-child(5) {
-    top: 70% !important;
+    top: 110% !important;
     right: 5vw !important;
     left: auto !important;
     transform: rotate(3deg) !important;
   }
 
   .card:nth-child(6) {
-    top: 215% !important;
+    top: 182% !important;
     right: 2vw !important;
     left: auto !important;
     transform: rotate(-2deg) !important;

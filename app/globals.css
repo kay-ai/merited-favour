@@ -40,3 +40,78 @@ a {
     color-scheme: dark;
   }
 }
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: #ffffff;
+  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont;
+  overflow-x: hidden;
+  color: #111;
+}
+
+button {
+  font-family: inherit;
+}
+
+.scene {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+
+.collage {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.envelope-open {
+  position: absolute;
+  top: 36px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(420px, 90vw);
+  z-index: 5;
+}
+
+.card {
+  position: absolute;
+  width: min(260px, 70vw);
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.card:hover {
+  transform: scale(1.04) rotate(var(--r));
+}
+
+.card img {
+  width: 100%;
+  display: block;
+  border-radius: 16px;
+  box-shadow:
+    0 12px 30px rgba(0,0,0,0.12);
+}
+
+/* Mobile stacking fallback */
+@media (max-width: 768px) {
+  .card {
+    position: relative;
+    margin: 20px auto;
+    transform: none !important;
+  }
+
+  .collage {
+    display: flex;
+    flex-direction: column;
+    padding-top: 220px;
+    align-items: center;
+  }
+}

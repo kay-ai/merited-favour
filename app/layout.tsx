@@ -1,19 +1,22 @@
 import "@/styles/globals.css"
 
+import { ReactNode } from "react"
+import BackgroundShell from "@/components/layout/BackgroundShell"
+
 export const metadata = {
   title: "Wedding Invitation",
   description: "You're invited"
 }
 
-export default function RootLayout({
-  children
+export default function WeddingLayout({
+  children,
 }: {
-  children: React.ReactNode
+  children: ReactNode
 }) {
   return (
     <html lang="en">
       <body>
-        {children}
+        <BackgroundShell>{children}</BackgroundShell>
       </body>
     </html>
   )

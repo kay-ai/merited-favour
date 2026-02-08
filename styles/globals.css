@@ -215,7 +215,7 @@ button {
   display: block;
   height: auto;
   border-radius: 8px;
-  box-shadow: 0 12px 35px rgba(0,0,0,0.15);
+  filter: drop-shadow(0 12px 35px #00000026);
   transition: box-shadow 0.3s ease;
 }
 
@@ -285,14 +285,14 @@ button {
   }
 
   .card:nth-child(3) {
-    top: 285% !important;
-    left: 18vw !important;
+    top: 295% !important;
+    left: 15vw !important;
     right: auto !important;
-    transform: rotate(-4deg) !important;
+    transform: rotate(-3deg) !important;
   }
 
   .card:nth-child(4) {
-    top: 345% !important;
+    top: 360% !important;
     left: 19vw !important;
     right: auto !important;
     transform: translateX(-50%) rotate(3deg) !important;

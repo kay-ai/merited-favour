@@ -2213,3 +2213,57 @@ textarea {
     left: 10px;
   }
 }
+
+.wishes-scroll-container {
+  height: 500px;
+  overflow: hidden;
+  overflow-y: auto;
+  position: relative;
+  margin-top: 20px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.wishes-scroll-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  animation: scrollUp 30s linear infinite;
+}
+
+.wishes-scroll-container:hover .wishes-scroll-content {
+  animation-play-state: paused;
+}
+
+.wishes-scroll-container:active .wishes-scroll-content {
+  animation-play-state: paused;
+}
+
+.wishes-form{
+  margin-bottom:20px
+}
+
+.scroll-hint{
+  font-size: 14px;
+  color: #999;
+}
+
+@keyframes scrollUp {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-50%);
+  }
+}
+
+.wish-card {
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .wishes-scroll-container {
+    height: 400px;
+  }
+}

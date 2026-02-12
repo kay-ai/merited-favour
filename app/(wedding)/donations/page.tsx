@@ -95,13 +95,13 @@ export default function DonationsPage() {
         {/* Additional Info Cards */}
         <div className="info-cards">
           <div className="info-card">
-            <div className="info-icon">🎁</div>
+            {/* <div className="info-icon">🎁</div> */}
             <h3>Physical Gifts</h3>
             <p>If you prefer to give a physical gift, please feel free to bring it to the reception.</p>
           </div>
 
           <div className="info-card">
-            <div className="info-icon">💐</div>
+            {/* <div className="info-icon">💐</div> */}
             <h3>Your Presence</h3>
             <p>Remember, your presence at our wedding is the greatest gift we could receive.</p>
           </div>

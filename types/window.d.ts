@@ -1,3 +1,5 @@
+declare module 'react-toastify/dist/ReactToastify.css'
+declare module '@/styles/globals.css'
 interface StorageResult {
   key: string
   value: string

@@ -1,26 +1,17 @@
 "use client"
-import { useEffect, useState } from "react"
-
-function FloatingFlower({ delay = 0, duration = 20, x = 0 }: { delay?: number; duration?: number; x?: number }) {
-  return (
-    <div
-      className="floating-flower"
-      style={{
-        left: `${x}%`,
-        animationDelay: `${delay}s`,
-        animationDuration: `${duration}s`,
-      }}
-    >
-      🌸
-    </div>
-  )
-}
+import { useState, useEffect } from "react"
+import { addDoc, collection, getDocs, query, orderBy } from "firebase/firestore"
+import { db } from "@/firebase/firebase"
+import { Timestamp } from "firebase/firestore"
+import { toast } from "react-toastify"
+import Marquee from "react-fast-marquee"
 
 interface Wish {
   id: string
   name: string
   message: string
-  timestamp: number
+  createdAt: Timestamp
+  createdAtClient: number
 }
 
 export default function WishesPage() {
@@ -29,53 +20,48 @@ export default function WishesPage() {
   const [wishes, setWishes] = useState<Wish[]>([])
   const [loading, setLoading] = useState(false)
 
+  useEffect(() => {
+    fetchWishes()
+  }, [])
+
   const fetchWishes = async () => {
     try {
-      const result = await window.storage.list("wish:", true)
-      if (result && result.keys) {
-        const wishPromises = result.keys.map(async (key) => {
-          const data = await window.storage.get(key, true)
-          if (data) {
-            return JSON.parse(data.value)
-          }
-          return null
-        })
-        const loadedWishes = (await Promise.all(wishPromises)).filter(Boolean)
-        setWishes(loadedWishes.sort((a, b) => b.timestamp - a.timestamp))
-      }
+      const q = query(collection(db, "wishes"), orderBy("createdAtClient", "desc"))
+      const snap = await getDocs(q)
+      
+      const loadedWishes: Wish[] = snap.docs.map(doc => ({
+        id: doc.id,
+        ...(doc.data() as any),
+      }))
+      
+      setWishes(loadedWishes)
     } catch (error) {
       console.error("Error loading wishes:", error)
     }
   }
 
-  useEffect(() => {
-    fetchWishes()
-  }, [])
-
   const submitWish = async () => {
     if (!name.trim() || !message.trim()) {
-      alert("Please fill in both your name and message")
+      toast.error("Please fill in both your name and message")
       return
     }
 
     setLoading(true)
     try {
-      const wish: Wish = {
-        id: `wish_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      await addDoc(collection(db, "wishes"), {
         name: name.trim(),
         message: message.trim(),
-        timestamp: Date.now()
-      }
-
-      await window.storage.set(`wish:${wish.id}`, JSON.stringify(wish), true)
+        createdAt: Timestamp.now(),
+        createdAtClient: Date.now()
+      })
       
       setName("")
       setMessage("")
       await fetchWishes()
-      alert("Thank you for your wishes! 💕")
+      toast.success("Thank you for your wishes!")
     } catch (error) {
       console.error("Error submitting wish:", error)
-      alert("Failed to submit wish. Please try again.")
+      toast.error("Failed to submit wish. Please try again.")
     } finally {
       setLoading(false)
     }
@@ -96,69 +82,86 @@ export default function WishesPage() {
     return date.toLocaleDateString()
   }
 
+  const WishCard = ({ wish }: { wish: Wish }) => (
+    <div className="wish-card">
+      <div className="wish-header">
+        <p className="wish-name">{wish.name}</p>
+        <span className="wish-time">{formatDate(wish.createdAtClient)}</span>
+      </div>
+      <p className="wish-message">{wish.message}</p>
+    </div>
+  )
+
   return (
-      <div className="main">
-        <div className="page-header">
-          <h1>Leave a Wish</h1>
-          <p>Share your blessings and well wishes for the couple</p>
+    <div className="main">
+      <div className="page-header">
+        <h1>Leave a Wish</h1>
+        <p>Share your blessings and well wishes for the couple</p>
+      </div>
+
+      <div className="form-container wishes-form">
+        <div className="input-group">
+          <label className="input-label">Your Name</label>
+          <input
+            type="text"
+            placeholder="Enter your name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
         </div>
 
-        <div className="form-container">
-          <div className="input-group">
-            <label className="input-label">Your Name</label>
-            <input
-              type="text"
-              placeholder="Enter your name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-          </div>
-
-          <div className="input-group">
-            <label className="input-label">Your Message</label>
-            <textarea
-              placeholder="Share your wishes, blessings, or memories with Us..."
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-            />
-          </div>
-
-          <button
-            className="submit-btn"
-            onClick={submitWish}
-            disabled={loading}
-          >
-            {loading ? "Sending..." : "Send us a Wish"}
-          </button>
+        <div className="input-group">
+          <label className="input-label">Your Message</label>
+          <textarea
+            placeholder="Share your wishes, blessings, or memories with Merit & Favour..."
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+          />
         </div>
 
-        <div className="wishes-container">
-          <div className="wishes-header">
-            <h2>Wishes & Blessings</h2>
-            <p className="wishes-count">
-              {wishes.length} {wishes.length === 1 ? 'wish' : 'wishes'} shared
-            </p>
-          </div>
+        <button
+          className="submit-btn"
+          onClick={submitWish}
+          disabled={loading}
+        >
+          {loading ? "Sending..." : "Send us a Wish"}
+        </button>
+      </div>
 
-          {wishes.length === 0 ? (
-            <div className="empty-state">
-              <div className="empty-state-icon">💌</div>
-              <p>No wishes yet. Be the first to share your blessings!</p>
-            </div>
-          ) : (
-            <div className="wishes-list">
-              {wishes.map((wish) => (
-                <div key={wish.id} className="wish-card">
-                  <div className="wish-header">
-                    <p className="wish-name">{wish.name}</p>
-                    <span className="wish-time">{formatDate(wish.timestamp)}</span>
-                  </div>
-                  <p className="wish-message">{wish.message}</p>
-                </div>
-              ))}
-            </div>
+      <div className="wishes-container">
+        <div className="wishes-header">
+          <p className="wishes-count">
+            {wishes.length} {wishes.length === 1 ? 'wish' : 'wishes'} shared
+          </p>
+          {wishes.length > 5 && (
+            <p className="scroll-hint">Auto-scrolling • Hover to pause</p>
           )}
         </div>
+
+       {wishes.length === 0 ? (
+  <div className="empty-state">
+    <p>No wishes yet. Be the first to share your blessings!</p>
+  </div>
+          ) : wishes.length <= 5 ? (
+            <div className="wishes-list">
+              {wishes.map((wish) => (
+                <WishCard key={wish.id} wish={wish} />
+              ))}
+            </div>
+          ) : (
+            <div className="wishes-scroll-container">
+              <div className="wishes-scroll-content">
+                {wishes.map((wish) => (
+                  <WishCard key={wish.id} wish={wish} />
+                ))}
+                {/* Duplicate for seamless loop */}
+                {wishes.map((wish) => (
+                  <WishCard key={`${wish.id}-duplicate`} wish={wish} />
+                ))}
+              </div>
+            </div>
+          )}
       </div>
+    </div>
   )
 }

@@ -11,13 +11,13 @@ export default function LocationsPage() {
       </div>
       <div className="locations-container">
         <LocationCard
-          title="Wedding Ceremony"
+          title="Holy Matrimony"
           icon="⛪"
           venue="All Christian Fellowship Mission"
           address="Mission Maitama, Abuja, FCT"
           time="10:00 AM"
           date="Sunday, February 14, 2026"
-          mapUrl="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3939.5739388899673!2d7.4892!3d9.0819!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zOcKwMDQnNTQuOCJOIDfCsDI5JzIxLjEiRQ!5e0!3m2!1sen!2sng!4v1234567890"
+          mapUrl="https://www.google.com/maps?q=9.0939627,7.4834106&output=embed"
         />{" "}
         <LocationCard
           title="Wedding Reception"
@@ -26,7 +26,7 @@ export default function LocationsPage() {
           address="Maitama, Abuja, FCT"
           time="2:00 PM"
           date="Sunday, February 14, 2026"
-          mapUrl="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3939.5739388899673!2d7.4892!3d9.0819!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zOcKwMDQnNTQuOCJOIDfCsDI5JzIxLjEiRQ!5e0!3m2!1sen!2sng!4v1234567890"
+          mapUrl="https://www.google.com/maps?q=9.0898737,7.4816242&output=embed"
         />{" "}
       </div>{" "}
       <div className="transportation-card">
@@ -34,9 +34,7 @@ export default function LocationsPage() {
         <h3>Parking & Transportation</h3>{" "}
         <p>
           {" "}
-          Ample parking is available at both venues. For those requiring
-          transportation, shuttle services will be available between the
-          ceremony and reception venues.{" "}
+          Ample parking is available at both venues. The reception venue is a 5mins drive from the church venue.{" "}
         </p>{" "}
       </div>{" "}
     </div>

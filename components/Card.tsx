@@ -1,8 +1,10 @@
 "use client"
 import { useEffect, useRef, useState } from "react"
+import { useRouter } from "next/navigation"
 
 export default function Card({ src, style, link, delay = 0 }: { src: string; style: any; link: string; delay?: number }) {
   const cardRef = useRef<HTMLDivElement>(null)
+  const router = useRouter();
   const [isVisible, setIsVisible] = useState(false)
 
   useEffect(() => {
@@ -14,7 +16,7 @@ export default function Card({ src, style, link, delay = 0 }: { src: string; sty
 
   const handleClick = () => {
     // window.open(link, '_blank')
-    window.open(link)
+    router.push(link)
   }
 
   return (

@@ -2267,3 +2267,360 @@ textarea {
     height: 400px;
   }
 }
+
+/* ===============================
+   DARK MODE STYLES
+   =============================== */
+
+/* Dark Mode Toggle Button */
+.dark-mode-toggle {
+  position: fixed;
+  top: 30px;
+  right: 30px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: white;
+  border: 2px solid #e0e0e0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 1000;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  color: #5a6952;
+}
+
+.dark-mode-toggle:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  background: #f5efe6;
+}
+
+@media (max-width: 768px) {
+  .dark-mode-toggle {
+    top: 20px;
+    right: 20px;
+    width: 45px;
+    height: 45px;
+  }
+}
+
+/* Dark Mode Root Styles */
+.dark-mode {
+  --bg-primary: #1a1a1a;
+  --bg-secondary: #2d2d2d;
+  --bg-tertiary: #3a3a3a;
+  --text-primary: #e8e8e8;
+  --text-secondary: #b8b8b8;
+  --text-muted: #888888;
+  --border-color: #404040;
+  --accent-color: #a0ab8f;
+  --card-bg: #2d2d2d;
+  --input-bg: #3a3a3a;
+}
+
+/* Body & Main Wrapper */
+.dark-mode,
+.dark-mode body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.dark-mode .wedding-wrapper {
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+}
+
+/* Background Text */
+.dark-mode .bg-text {
+  color: rgba(160, 171, 143, 0.08);
+}
+
+/* Corner Decorations */
+.dark-mode .corner-decoration.top-left {
+  background: radial-gradient(circle at top left, #a0ab8f 0%, transparent 70%);
+  opacity: 0.15;
+}
+
+.dark-mode .corner-decoration.bottom-right {
+  background: radial-gradient(circle at bottom right, #a0ab8f 0%, transparent 70%);
+  opacity: 0.15;
+}
+
+/* Page Headers */
+.dark-mode .page-header h1 {
+  color: #a0ab8f;
+}
+
+.dark-mode .page-header p {
+  color: var(--text-secondary);
+}
+
+/* Cards */
+.dark-mode .location-card,
+.dark-mode .form-container,
+.dark-mode .wish-card,
+.dark-mode .camera-section,
+.dark-mode .transportation-card,
+.dark-mode .donation-card,
+.dark-mode .toast-card-main,
+.dark-mode .info-card,
+.dark-mode .photo-card {
+  background: var(--card-bg);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+}
+
+.dark-mode .location-card::before,
+.dark-mode .form-container::before,
+.dark-mode .camera-section::before,
+.dark-mode .transportation-card::before,
+.dark-mode .donation-card::before,
+.dark-mode .toast-card-main::before,
+.dark-mode .info-card::before {
+  background: linear-gradient(90deg, #a0ab8f, #8b957b);
+}
+
+/* Titles */
+.dark-mode .location-title,
+.dark-mode .section-title,
+.dark-mode .card-title,
+.dark-mode .toast-title,
+.dark-mode h2,
+.dark-mode h3 {
+  color: #a0ab8f;
+}
+
+/* Text */
+.dark-mode .detail-value,
+.dark-mode .wish-name,
+.dark-mode .fruit-title {
+  color: var(--text-primary);
+}
+
+.dark-mode .detail-label,
+.dark-mode .detail-address,
+.dark-mode .card-description,
+.dark-mode .wish-message,
+.dark-mode .toast-message,
+.dark-mode .fruit-details,
+.dark-mode p {
+  color: var(--text-secondary);
+}
+
+.dark-mode .detail-label,
+.dark-mode .wishes-count,
+.dark-mode .photo-count,
+.dark-mode .wish-time,
+.dark-mode .photo-time {
+  color: var(--text-muted);
+}
+
+/* Inputs */
+.dark-mode input,
+.dark-mode textarea {
+  background: var(--input-bg);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+.dark-mode input::placeholder,
+.dark-mode textarea::placeholder {
+  color: var(--text-muted);
+}
+
+.dark-mode input:focus,
+.dark-mode textarea:focus {
+  border-color: #a0ab8f;
+  box-shadow: 0 0 0 3px rgba(160, 171, 143, 0.2);
+}
+
+.dark-mode .input-label {
+  color: #a0ab8f;
+}
+
+/* Buttons */
+.dark-mode .submit-btn,
+.dark-mode .btn-primary {
+  background: linear-gradient(135deg, #8b957b, #a0ab8f);
+}
+
+.dark-mode .btn-secondary,
+.dark-mode .copy-btn {
+  background: var(--bg-tertiary);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+.dark-mode .btn-secondary:hover,
+.dark-mode .copy-btn:hover {
+  background: var(--input-bg);
+  border-color: #a0ab8f;
+}
+
+.dark-mode .frame-option {
+  background: var(--card-bg);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+.dark-mode .frame-option:hover {
+  border-color: #a0ab8f;
+}
+
+.dark-mode .frame-option.active {
+  background: var(--bg-tertiary);
+  border-color: #a0ab8f;
+}
+
+/* Account Details */
+.dark-mode .account-details,
+.dark-mode .thank-you-note,
+.dark-mode .decorative-quote,
+.dark-mode .camera-placeholder {
+  background: var(--bg-tertiary);
+  border-color: var(--border-color);
+}
+
+.dark-mode .detail-row {
+  border-bottom-color: var(--border-color);
+}
+
+/* Ceremony Tree */
+.dark-mode .tree-trunk {
+  background: linear-gradient(to bottom, #5a4d3b, #6d5d4b);
+}
+
+.dark-mode .branch-line {
+  background: linear-gradient(to right, #6d5d4b, #5a4d3b);
+}
+
+.dark-mode .section-badge {
+  background: var(--card-bg);
+  color: var(--text-primary);
+}
+
+.dark-mode .fruit-item {
+  background: var(--card-bg);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.dark-mode .fruit-details {
+  border-top-color: var(--border-color);
+}
+
+/* Empty State */
+.dark-mode .empty-state {
+  color: var(--text-muted);
+}
+
+/* Gallery */
+.dark-mode .gallery-item {
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+}
+
+.dark-mode .gallery-item:hover {
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+}
+
+/* Modal */
+.dark-mode .modal-overlay {
+  background: rgba(0, 0, 0, 0.95);
+}
+
+.dark-mode .modal-close,
+.dark-mode .modal-download {
+  background: var(--card-bg);
+  color: var(--text-primary);
+}
+
+.dark-mode .modal-close:hover,
+.dark-mode .modal-download:hover {
+  background: var(--bg-tertiary);
+}
+
+/* Card Icons */
+.dark-mode .card-icon {
+  background: linear-gradient(135deg, var(--bg-tertiary), var(--input-bg));
+  color: #a0ab8f;
+}
+
+/* SVG Icons */
+.dark-mode svg {
+  color: #a0ab8f;
+}
+
+.dark-mode .detail-item svg {
+  color: #a0ab8f;
+}
+
+/* Scrollbar for Wishes */
+.dark-mode .wishes-scroll-container::-webkit-scrollbar {
+  display: none;
+}
+
+/* Video Container */
+.dark-mode .video-container {
+  background: #000;
+}
+
+/* Hover States */
+.dark-mode .wish-card:hover,
+.dark-mode .location-card:hover,
+.dark-mode .info-card:hover,
+.dark-mode .photo-card:hover {
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+}
+
+/* Map Container */
+.dark-mode .map-container {
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  filter: grayscale(20%) brightness(0.8);
+}
+
+/* Envelope */
+.dark-mode .envelope-closed-img,
+.dark-mode .envelope-open {
+  filter: brightness(0.9) drop-shadow(0 8px 20px rgba(0,0,0,0.4));
+}
+
+/* Collage Cards */
+.dark-mode .card img {
+  filter: drop-shadow(0 12px 35px rgba(0, 0, 0, 0.5)) brightness(0.95);
+}
+
+/* Toast Closing */
+.dark-mode .toast-closing {
+  border-top-color: var(--border-color);
+  color: var(--text-secondary);
+}
+
+.dark-mode .toast-closing strong {
+  color: #a0ab8f;
+}
+
+/* Download Button */
+.dark-mode .download-btn {
+  color: #a0ab8f;
+}
+
+.dark-mode .download-btn:hover {
+  color: var(--text-primary);
+}
+
+/* Dark Mode Toggle in Dark Mode */
+.dark-mode .dark-mode-toggle {
+  background: var(--card-bg);
+  border-color: var(--border-color);
+  color: #a0ab8f;
+}
+
+.dark-mode .dark-mode-toggle:hover {
+  background: var(--bg-tertiary);
+  border-color: #a0ab8f;
+}
+
+/* Scroll Hint */
+.dark-mode .scroll-hint {
+  color: var(--text-muted);
+}

@@ -1,7 +1,7 @@
 // components/layout/BackgroundShell.tsx
 "use client"
 
-import { ReactNode, useState } from "react"
+import { ReactNode, useState, useEffect } from "react"
 import MusicToggle from "@/components/MusicToggle"
 import { FloatingFlower } from "@/components/FloatingFlower"
 import {
@@ -9,6 +9,7 @@ import {
 } from "./BackgroundShellContext"
 import { ToastContainer } from "react-toastify"
 import 'react-toastify/dist/ReactToastify.css'
+import { Moon, Sun } from "lucide-react"
 
 export default function BackgroundShell({
   children,
@@ -16,6 +17,31 @@ export default function BackgroundShell({
   children: ReactNode
 }) {
   const [musicEnabled, setMusicEnabled] = useState(false)
+  const [darkMode, setDarkMode] = useState(true)
+
+  useEffect(() => {
+    // Check for saved dark mode preference, default to dark mode
+    const savedMode = localStorage.getItem('darkMode')
+    if (savedMode === 'false') {
+      setDarkMode(false)
+      document.documentElement.classList.remove('dark-mode')
+    } else {
+      setDarkMode(true)
+      document.documentElement.classList.add('dark-mode')
+      localStorage.setItem('darkMode', 'true')
+    }
+  }, [])
+
+  const toggleDarkMode = () => {
+    setDarkMode(!darkMode)
+    if (!darkMode) {
+      document.documentElement.classList.add('dark-mode')
+      localStorage.setItem('darkMode', 'true')
+    } else {
+      document.documentElement.classList.remove('dark-mode')
+      localStorage.setItem('darkMode', 'false')
+    }
+  }
 
   return (
     <BackgroundShellContext.Provider
@@ -51,8 +77,17 @@ export default function BackgroundShell({
           pauseOnFocusLoss
           draggable
           pauseOnHover
-          theme="light"
+          theme={darkMode ? "dark" : "light"}
         />
+
+        {/* Dark Mode Toggle */}
+        <button
+          onClick={toggleDarkMode}
+          className="dark-mode-toggle"
+          aria-label="Toggle dark mode"
+        >
+          {darkMode ? <Sun size={20} /> : <Moon size={20} />}
+        </button>
 
         {/* Music */}
         <MusicToggle enabled={musicEnabled} />

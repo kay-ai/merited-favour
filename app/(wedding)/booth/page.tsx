@@ -21,19 +21,13 @@ export default function PhotoBoothPage() {
   const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null)
   const [photos, setPhotos] = useState<Photo[]>([])
   const [loading, setLoading] = useState(false)
+  const [selectedImage, setSelectedImage] = useState<string | null>(null)
   const [facingMode, setFacingMode] = useState<"user" | "environment">("user")
 
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const streamRef = useRef<MediaStream | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
-
-  const frames = [
-    { id: "classic", name: "Classic", emoji: "🌿" },
-    { id: "romantic", name: "Romantic", emoji: "💕" },
-    { id: "elegant", name: "Elegant", emoji: "✨" },
-    { id: "fun", name: "Fun", emoji: "🎉" },
-  ]
 
   const isMobile = () =>
     typeof window !== "undefined" &&
@@ -162,11 +156,25 @@ export default function PhotoBoothPage() {
     }
   }
 
-  const downloadPhoto = (url: string) => {
-    const a = document.createElement("a")
-    a.href = url
-    a.download = `wedding-photo-${Date.now()}.jpg`
-    a.click()
+  const openImage = (src: string) => {
+    setSelectedImage(src)
+    console.log("src: ", src)
+  }
+
+  const closeModal = () => {
+    setSelectedImage(null)
+  }
+
+  const downloadImage = (src: string) => {
+    // Add download disposition to Firebase URL to force download
+    const downloadUrl = src.includes('?') 
+      ? `${src}&response-content-disposition=attachment`
+      : `${src}?response-content-disposition=attachment`
+    
+    const link = document.createElement("a")
+    link.href = downloadUrl
+    link.download = `wedding-photo-${Date.now()}.jpg`
+    link.click()
   }
 
   /* -------------------- UI -------------------- */
@@ -183,93 +191,43 @@ export default function PhotoBoothPage() {
       />
 
       <div className="page-header">
-        <h1>Wedding Photo Booth</h1>
+        <h1>Photo Booth</h1>
         <p>Capture beautiful moments — live wedding gallery</p>
       </div>
 
       <div className="booth-container">
-        <div className="camera-section">
-          <h2 className="section-title">Take a Photo</h2>
-
-          <div className="frame-selector">
-            {frames.map(frame => (
-              <button
-                key={frame.id}
-                className={`frame-option ${selectedFrame === frame.id ? "active" : ""}`}
-                onClick={() => setSelectedFrame(frame.id)}
-              >
-                <span>{frame.emoji}</span>
-                <span>{frame.name}</span>
-              </button>
-            ))}
+        {!showCamera && !capturedPhoto && (
+          <div className="camera-btn-row">
+            <button className="btn btn-primary" onClick={openCamera}>
+              <Camera size={20} /> Open Camera
+            </button>
           </div>
+        )}
+        {capturedPhoto && (
+          <div className="camera-section">
+            <div className="camera-container">
+              <div className="video-container">
+                <img src={capturedPhoto} className="photo-preview" alt="preview" />
+              </div>
 
-          <div className="camera-container">
-            {!showCamera && !capturedPhoto && (
-              <div className="camera-placeholder">
-                <Camera size={64} />
-                <p>Ready to capture a moment?</p>
-                <button className="btn btn-primary" onClick={openCamera}>
-                  <Camera size={20} /> Open Camera
+              <div className="button-group">
+                <button className="btn btn-primary" disabled={loading} onClick={savePhoto}>
+                  {loading ? "Saving..." : "Save Photo"}
+                </button>
+                <button className="btn btn-secondary" onClick={() => setCapturedPhoto(null)}>
+                  Retake
+                </button>
+                <button className="btn btn-danger" onClick={stopCamera}>
+                  <X size={20} /> Cancel
                 </button>
               </div>
-            )}
-
-            {showCamera && !capturedPhoto && (
-              <>
-                <div className="video-container">
-                  <video ref={videoRef} autoPlay playsInline muted />
-                  <div className={`frame-overlay ${selectedFrame}`}>
-                    <div className="frame-text">Merit & Favour</div>
-                    <div className="frame-text">Feb 14, 2026</div>
-                  </div>
-                </div>
-
-                <div className="button-group">
-                  <button className="btn btn-secondary" onClick={switchCamera}>
-                    <RotateCcw size={20} /> Switch
-                  </button>
-                  <button className="btn btn-primary" onClick={capturePhoto}>
-                    <Camera size={20} /> Capture
-                  </button>
-                  <button className="btn btn-danger" onClick={stopCamera}>
-                    <X size={20} /> Cancel
-                  </button>
-                </div>
-              </>
-            )}
-
-            {capturedPhoto && (
-              <>
-                <div className="video-container">
-                  <img src={capturedPhoto} className="photo-preview" alt="preview" />
-                  <div className={`frame-overlay ${selectedFrame}`}>
-                    <div className="frame-text">Merit & Favour</div>
-                    <div className="frame-text">Feb 14, 2026</div>
-                  </div>
-                </div>
-
-                <div className="button-group">
-                  <button className="btn btn-primary" disabled={loading} onClick={savePhoto}>
-                    {loading ? "Saving..." : "Save Photo"}
-                  </button>
-                  <button className="btn btn-secondary" onClick={() => setCapturedPhoto(null)}>
-                    Retake
-                  </button>
-                  <button className="btn btn-danger" onClick={stopCamera}>
-                    <X size={20} /> Cancel
-                  </button>
-                </div>
-              </>
-            )}
-
-            <canvas ref={canvasRef} style={{ display: "none" }} />
+            </div>
           </div>
-        </div>
+        )}
 
         <div className="gallery-section">
           <div className="gallery-header">
-            <h2>Wedding Gallery</h2>
+            {/* <h2>Wedding Gallery</h2> */}
             <p>{photos.length} photos</p>
           </div>
 
@@ -280,14 +238,39 @@ export default function PhotoBoothPage() {
             </div>
           ) : (
             <div className="photo-grid">
-              {photos.map(photo => (
-                <div key={photo.id} className="photo-card">
-                  <img src={photo.url} alt="wedding" />
-                  <button onClick={() => downloadPhoto(photo.url)}>
-                    <Download size={18} />
-                  </button>
-                </div>
+              {photos.map((photo, i) => (
+                  <div
+                    key={i}
+                    className="gallery-item bounce-animation"
+                    style={{ animationDelay: `${i * 0.1}s` }}
+                    onClick={() => openImage(photo.url)}
+                  >
+                    <img src={photo.url} alt="Wedding memory" />
+                    <div className="photo-overlay">
+                      <span>Click to view</span>
+                    </div>
+                  </div>
+                
               ))}
+            </div>
+          )}
+
+          {/* Image Preview Modal */}
+          {selectedImage && (
+            <div className="modal-overlay" onClick={closeModal}>
+              <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                <button className="modal-close" onClick={closeModal}>
+                  <X size={24} />
+                </button>
+                <button 
+                  className="modal-download" 
+                  onClick={() => downloadImage(selectedImage)}
+                  title="Download photo"
+                >
+                  <Download size={20} />
+                </button>
+                <img src={selectedImage} alt="Preview" className="modal-image" />
+              </div>
             </div>
           )}
         </div>

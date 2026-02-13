@@ -605,37 +605,10 @@ button {
   font-weight: 400;
 }
 
-/* Frame Selector */
-.frame-selector {
+.camera-btn-row{
+  width: 100%;
   display: flex;
-  gap: 12px;
   justify-content: center;
-  margin-bottom: 30px;
-  flex-wrap: wrap;
-}
-
-.frame-option {
-  padding: 10px 20px;
-  border: 2px solid #e0e0e0;
-  border-radius: 12px;
-  background: white;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-size: 14px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.frame-option:hover {
-  border-color: #8b957b;
-  transform: translateY(-2px);
-}
-
-.frame-option.active {
-  border-color: #8b957b;
-  background: #f5efe6;
-  font-weight: 600;
 }
 
 /* Camera Container */
@@ -2547,7 +2520,7 @@ textarea {
 
 /* SVG Icons */
 .dark-mode svg {
-  color: #a0ab8f;
+  /* color: #a0ab8f; */
 }
 
 .dark-mode .detail-item svg {
@@ -2623,4 +2596,85 @@ textarea {
 /* Scroll Hint */
 .dark-mode .scroll-hint {
   color: var(--text-muted);
+}
+
+/* Leaderboard specific styles */
+
+.leaderboard-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Progress indicators */
+.progress-dots {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 12px;
+}
+
+.progress-dot {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+  font-size: 12px;
+  transition: all 0.3s ease;
+}
+
+.progress-dot.completed {
+  background: #4caf50;
+}
+
+.progress-dot.pending {
+  background: #e0e0e0;
+}
+
+/* Game modal adjustments */
+.modal-content {
+  max-width: 800px;
+}
+
+/* Input styling */
+input[type="text"],
+input[type="password"] {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  transition: border-color 0.3s ease;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus {
+  outline: none;
+  border-color: #8b957b;
+}
+
+/* Leaderboard winner highlight */
+.leaderboard-winner {
+  background: #fff9e6 !important;
+  border: 2px solid #c4a574 !important;
+}
+
+/* Empty state styling */
+.empty-state {
+  text-align: center;
+  padding: 60px 40px;
+  color: #999;
+}
+
+.empty-state svg {
+  margin-bottom: 20px;
+  opacity: 0.5;
+}
+
+.empty-state p {
+  font-size: 16px;
 }

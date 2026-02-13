@@ -14,6 +14,7 @@ export default function WeddingCollage() {
     { src: "/images/card-donations.png", link: "/donations", position: { top: "22%", right: "11%", rotate: "3deg" }, delay: 300 },
     { src: "/images/card-gallery.png", link: "/gallery", position: { top: "35%", right: "3%", rotate: "-2deg" }, delay: 500 },
     { src: "/images/card-toast.png", link: "/toasts", position: { top: "71%", right: "12%", rotate: "2deg" }, delay: 600 },
+    { src: "/images/card-toast.png", link: "/game", position: { top: "91%", right: "12%", rotate: "2deg" }, delay: 700 },
   ]
 
   return (

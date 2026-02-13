@@ -76,6 +76,13 @@ export default function GamePage() {
   useEffect(() => {
     checkGameStatus()
     loadLeaderboard()
+    
+    // Load saved name from localStorage
+    const savedName = localStorage.getItem("gameGuestName")
+    if (savedName) {
+      setGuestName(savedName)
+    }
+    
     return stopCamera
   }, [])
 
@@ -262,6 +269,9 @@ export default function GamePage() {
       return
     }
 
+    // Save name to localStorage
+    localStorage.setItem("gameGuestName", guestName.trim())
+
     // Check if guest has existing entries
     try {
       const q = query(
@@ -344,6 +354,7 @@ export default function GamePage() {
       } else {
         // Game completed!
         alert(`Congratulations ${guestName}! You've completed all ${TOTAL_ENTRIES} entries!`)
+        localStorage.removeItem("gameGuestName") // Clear saved name on completion
         await loadLeaderboard()
         setShowLeaderboard(true)
         resetGame()
@@ -556,6 +567,16 @@ export default function GamePage() {
           <div className="camera-section" style={{ maxWidth: "400px", margin: "0 auto" }}>
             <h2 className="section-title">Enter Your Name</h2>
             <div style={{ padding: "20px" }}>
+              {localStorage.getItem("gameGuestName") && (
+                <p style={{ 
+                  textAlign: "center", 
+                  color: "#666", 
+                  marginBottom: "12px",
+                  fontSize: "14px" 
+                }}>
+                  Welcome back! Continue as <strong>{guestName}</strong>?
+                </p>
+              )}
               <input
                 type="text"
                 value={guestName}
@@ -574,6 +595,18 @@ export default function GamePage() {
               <button className="btn btn-primary" onClick={startGame} style={{ width: "100%" }}>
                 Start Challenge
               </button>
+              {localStorage.getItem("gameGuestName") && (
+                <button 
+                  className="btn btn-secondary" 
+                  onClick={() => {
+                    localStorage.removeItem("gameGuestName")
+                    setGuestName("")
+                  }} 
+                  style={{ width: "100%", marginTop: "12px" }}
+                >
+                  Play as Different Person
+                </button>
+              )}
             </div>
           </div>
         )}
@@ -617,9 +650,11 @@ export default function GamePage() {
               <div className="camera-placeholder">
                 <Camera size={64} />
                 <p>Ready to capture entry {currentEntry}?</p>
-                <button className="btn btn-primary" onClick={openCamera}>
-                  <Camera size={20} /> Open Camera
-                </button>
+                <div className="camera-btn-row">
+                    <button className="btn btn-primary" onClick={openCamera}>
+                    <Camera size={20} /> Open Camera
+                    </button>
+                </div>
               </div>
             )}
 

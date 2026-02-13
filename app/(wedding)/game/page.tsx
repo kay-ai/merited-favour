@@ -19,8 +19,8 @@ import { Timestamp } from "firebase/firestore"
 import { toast } from "react-toastify"
 
 // GAME CONFIG - Customize here
-const TOTAL_ENTRIES = 7
-const GAME_PASSWORD = "wedding2026" // Change this to your desired password
+const TOTAL_ENTRIES = 5
+const GAME_PASSWORD = "wedding2026"
 
 interface GameEntry {
   id: string

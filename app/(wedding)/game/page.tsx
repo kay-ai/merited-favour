@@ -52,6 +52,12 @@ export default function GamePage() {
   const [guestName, setGuestName] = useState("")
   const [currentEntry, setCurrentEntry] = useState(1)
   const [startTime, setStartTime] = useState<number | null>(null)
+  const [showResumeModal, setShowResumeModal] = useState(false)
+  const [resumeData, setResumeData] = useState<{
+    completed: number
+    startTime: number
+  } | null>(null)
+
   
   // Camera state
   const [showCamera, setShowCamera] = useState(false)
@@ -293,16 +299,12 @@ export default function GamePage() {
           return
         }
         
-        const resume = confirm(
-          `Welcome back ${guestName}! You have ${existingEntries.length} entries completed. Continue from entry ${existingEntries.length + 1}?`
-        )
-        
-        if (resume) {
-          setCurrentEntry(existingEntries.length + 1)
-          setStartTime(existingEntries[0].submittedAt) // Use original start time
-        } else {
-          return
-        }
+        setResumeData({
+            completed: existingEntries.length,
+            startTime: existingEntries[0].submittedAt,
+        })
+        setShowResumeModal(true)
+        return
       } else {
         // New player
         setStartTime(Date.now())
@@ -316,6 +318,22 @@ export default function GamePage() {
       setStartTime(Date.now())
     }
   }
+
+    const confirmResume = () => {
+        if (!resumeData) return
+
+        setCurrentEntry(resumeData.completed + 1)
+        setStartTime(resumeData.startTime)
+        setGameStarted(true)
+        setShowResumeModal(false)
+        setResumeData(null)
+    }
+
+    const cancelResume = () => {
+        setShowResumeModal(false)
+        setResumeData(null)
+    }
+
 
   const submitEntry = async () => {
     if (!capturedPhoto || loading) return
@@ -546,7 +564,7 @@ export default function GamePage() {
                 <X size={24} />
               </button>
               <div style={{ padding: "20px" }}>
-                <h2 style={{ marginBottom: "20px" }}>{selectedGuest.guestName}'s Entries</h2>
+                <h2 style={{ marginBottom: "20px" }}>{selectedGuest.guestName}&apos;s Entries</h2>
                 <div className="photo-grid">
                   {selectedGuest.entries.map((entry) => (
                     <div key={entry.id} className="gallery-item">
@@ -743,6 +761,55 @@ export default function GamePage() {
           </div>
         </div>
       )}
+      {/* Resume Game Modal */}
+        {showResumeModal && resumeData && (
+        <div className="modal-overlay" onClick={cancelResume}>
+            <div
+            className="modal-content"
+            onClick={(e) => e.stopPropagation()}
+            style={{ maxWidth: "420px", padding: "40px" }}
+            >
+            <button className="modal-close" onClick={cancelResume}>
+                <X size={24} />
+            </button>
+
+            <div style={{ textAlign: "center" }}>
+                <Clock size={64} style={{ margin: "0 auto 20px", opacity: 0.6 }} />
+                
+                <h2 style={{ marginBottom: "12px" }}>
+                Welcome back {guestName} 👋
+                </h2>
+
+                <p style={{ marginBottom: "24px", color: "#666", lineHeight: 1.5 }}>
+                You already completed <strong>{resumeData.completed}</strong> of{" "}
+                <strong>{TOTAL_ENTRIES}</strong> entries.
+                <br />
+                Continue from entry{" "}
+                <strong>{resumeData.completed + 1}</strong>?
+                </p>
+
+                <div style={{ display: "flex", gap: "12px" }}>
+                <button
+                    className="btn btn-secondary"
+                    onClick={cancelResume}
+                    style={{ flex: 1 }}
+                >
+                    Start Over
+                </button>
+
+                <button
+                    className="btn btn-primary"
+                    onClick={confirmResume}
+                    style={{ flex: 1 }}
+                >
+                    Continue
+                </button>
+                </div>
+            </div>
+            </div>
+        </div>
+        )}
+
     </div>
   )
 }

@@ -16,6 +16,7 @@ import {
 } from "firebase/firestore"
 import { storage, db } from "@/firebase/firebase"
 import { Timestamp } from "firebase/firestore"
+import { toast } from "react-toastify"
 
 // GAME CONFIG - Customize here
 const TOTAL_ENTRIES = 7
@@ -122,10 +123,10 @@ export default function GamePage() {
         setPasswordInput("")
       } catch (err) {
         console.error("Error unlocking game:", err)
-        alert("Failed to unlock game. Please try again.")
+        toast.error("Failed to unlock game. Please try again.")
       }
     } else {
-      alert("Incorrect password!")
+      toast.error("Incorrect password!");
       setPasswordInput("")
     }
   }
@@ -138,13 +139,13 @@ export default function GamePage() {
         setGameUnlocked(false)
         setShowLockModal(false)
         setLockPasswordInput("")
-        alert("Game has been locked successfully!")
+        toast.success("Game has been locked successfully!")
       } catch (err) {
         console.error("Error locking game:", err)
-        alert("Failed to lock game. Please try again.")
+        toast.error("Failed to lock game. Please try again.")
       }
     } else {
-      alert("Incorrect password!")
+      toast.error("Incorrect password!")
       setLockPasswordInput("")
     }
   }
@@ -224,7 +225,7 @@ export default function GamePage() {
       }
     } catch (err) {
       console.error("Camera error:", err)
-      alert("Camera access failed. Please allow permissions.")
+      toast.error("Camera access failed. Please allow permissions.")
     }
   }
 
@@ -271,7 +272,7 @@ export default function GamePage() {
 
   const startGame = async () => {
     if (!guestName.trim()) {
-      alert("Please enter your name!")
+      toast.error("Please enter your name!")
       return
     }
 
@@ -293,7 +294,7 @@ export default function GamePage() {
         // Guest has existing entries, resume from last entry
         const lastEntry = existingEntries[existingEntries.length - 1]
         if (lastEntry.entryNumber >= TOTAL_ENTRIES) {
-          alert(`${guestName}, you've already completed all entries! Check the leaderboard.`)
+            toast.error(`${guestName}, you've already completed all entries! Check the leaderboard.`)
           setShowLeaderboard(true)
           await loadLeaderboard()
           return
@@ -370,16 +371,15 @@ export default function GamePage() {
       if (currentEntry < TOTAL_ENTRIES) {
         setCurrentEntry(currentEntry + 1)
       } else {
-        // Game completed!
-        alert(`Congratulations ${guestName}! You've completed all ${TOTAL_ENTRIES} entries!`)
-        localStorage.removeItem("gameGuestName") // Clear saved name on completion
+        toast.success(`Congratulations ${guestName}! You've completed all ${TOTAL_ENTRIES} entries!`);
+        localStorage.removeItem("gameGuestName")
         await loadLeaderboard()
         setShowLeaderboard(true)
         resetGame()
       }
     } catch (err) {
       console.error("Submit error:", err)
-      alert("Upload failed. Try again.")
+        toast.error("Upload failed. Try again.");
     } finally {
       setLoading(false)
     }
